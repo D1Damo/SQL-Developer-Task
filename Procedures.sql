@@ -1,7 +1,6 @@
 
 -- P1 Create Customer 
 -- Requirements: reject duplicate email, set Active, return customer ID and registration status.
--- DROP PROCEDURE IF EXISTS CreateCustomer;
 DELIMITER $$
 CREATE PROCEDURE CreateCustomer(
     IN p_customer_name VARCHAR(100),
@@ -47,9 +46,8 @@ CALL CreateCustomer(
 
 -- p2 Open Accounts
 
--- Requirements: validate active customer, allow Savings/Current, reject negative deposit, record opening deposit when
+-- Requirements: validate active customer, allow Savings/Current, reject negative deposit, reccord opening deposit when
 -- applicable.
--- DROP PROCEDURE IF EXISTS OpenAccount;
 DELIMITER $$
 CREATE PROCEDURE OpenAccount(
     IN p_customer_id INT,
@@ -114,8 +112,7 @@ CALL OpenAccount(101, 'Savings', 10000);
 
 
 -- p3 Deposit money
--- Requirements: positive amount, active account, increase balance, insert Deposit transaction and reference.
--- DROP PROCEDURE IF EXISTS DepositMoney;
+-- Requirements: positive amount, active account, increasse balance, insert Deposit transaction and reference.
 DELIMITER $$
 CREATE PROCEDURE DepositMoney(
     IN p_account_id INT,
@@ -172,9 +169,8 @@ CALL DepositMoney(2001, 5000);
 
 
 -- P4 Withdraww Money
--- Requirements: positive amount, active account, sufficient balance, update balance, insert Withdrawal transaction,
+-- Requirements: positive amount, activee account, sufficient balance, updte balance, insert Withdrawal transaction,
 -- transaction handling.
--- DROP PROCEDURE IF EXISTS WithdrawMoney;
 DELIMITER $$
 CREATE PROCEDURE WithdrawMoney(
     IN p_account_id INT,
@@ -238,9 +234,8 @@ DELIMITER ;
 CALL WithdrawMoney(2001, 2000);
 
 -- P5 Transfer Funds
--- This is the core transaction procedure: validate both accounts, prevent same-account transfers, check balance, debit +
--- credit + record both sides, and commit or roll back as one transaction.
--- DROP PROCEDURE IF EXISTS TransferFunds;
+-- This is the core transaction procedure: validate both accunts, prevent same-account transfers, check balance, debit +
+-- credit + record both sides, and comit or roll back as one transaction.
 
 DELIMITER $$
 CREATE PROCEDURE TransferFunds(
@@ -341,7 +336,6 @@ CALL TransferFunds(2001, 2002, 3000);
 -- P6 GetAccountStatement
 -- Returns deposits, withdrawals and transfers for the requested account/date range, ordered by transaction date, with a
 -- running balance.
--- DROP PROCEDURE IF EXISTS GetAccountStatement;
 DELIMITER $$
 CREATE PROCEDURE GetAccountStatement(
     IN p_account_id INT,
@@ -367,11 +361,10 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Account does not exist';
     END IF;
-    /*
-      Starting balance is reconstructed as:
-      current balance - net effect of all transactions.
-      For transfer rows, TRF-OUT decreases and TRF-IN increases.
-    */
+    --   Starting balance is reconstructed as:
+    --   current balance - net effect of all transactions.
+    --   For transfer rows, TRF-OUT decreases and TRF-IN increases.
+    
     SELECT
         a.account_id,
         a.balance
@@ -439,8 +432,6 @@ CALL GetAccountStatement(
 
 --BONUS: Get customer financial summary
 -- Returns active-account count, total balance, total deposits, total withdrawals and most recent transaction date.
--- DROP PROCEDURE IF EXISTS GetCustomerFinancialSummary;
-
 DELIMITER $$
 CREATE PROCEDURE GetCustomerFinancialSummary(
     IN p_customer_id INT
@@ -501,34 +492,34 @@ FROM accounts
 ORDER BY account_id;-- View transactions
 SELECT *
 FROM transactions
-ORDER BY transaction_date, transaction_id;-- Procedure 1
+ORDER BY transaction_date, transaction_id;-- P1
 CALL CreateCustomer(
     'Test Customer',
     '9999999999',
     'test.customer@example.com',
     'Pune'
-);-- Procedure 2
-CALL OpenAccount(101, 'Savings', 10000);-- Procedure 3
-CALL DepositMoney(2001, 5000);-- Procedure 4
-CALL WithdrawMoney(2001, 2000);-- Procedure 5
-CALL TransferFunds(2001, 2002, 3000);-- Procedure 6
+);-- P2
+CALL OpenAccount(101, 'Savings', 10000);-- P3
+CALL DepositMoney(2001, 5000);-- P4
+CALL WithdrawMoney(2001, 2000);-- P5
+CALL TransferFunds(2001, 2002, 3000);-- P6
 CALL GetAccountStatement(
     2001,
     '2026-09-01',
     '2026-09-30'
 );-- Bonus
-CALL GetCustomerFinancialSummary(101);--Negative test cases
+CALL GetCustomerFinancialSummary(101);--Negative test casess
 CALL CreateCustomer(
     'Duplicate Test',
     '8888888888',
     'amit@gmail.com',
     'Mumbai'
 );-- Invalid account type: should fail
-CALL OpenAccount(101, 'Salary', 5000);-- Negative opening deposit: should fail
-CALL OpenAccount(101, 'Savings', -100);-- Invalid deposit amount: should fail
-CALL DepositMoney(2001, 0);-- Insufficient withdrawal: should fail
-CALL WithdrawMoney(2001, 999999999);-- Same-account transfer: should fail
-CALL TransferFunds(2001, 2001, 1000);-- Insufficient transfer: should fail
+CALL OpenAccount(101, 'Salary', 5000);-- Negative opening deposit: shuld fail
+CALL OpenAccount(101, 'Savings', -100);-- Invalid deposit amount: should faill
+CALL DepositMoney(2001, 0);-- Insufficient withdraawal: should fail
+CALL WithdrawMoney(2001, 999999999);-- Same-accont transfer: should fail
+CALL TransferFunds(2001, 2001, 1000);-- Insufficient transferr: should faill
 CALL TransferFunds(2001, 2002, 999999999);
 
 
